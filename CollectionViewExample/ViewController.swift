@@ -59,6 +59,16 @@ class ViewController: UIViewController {
         updateCollectionView(with: newItems.shuffled())
     }
 
+    @IBAction func remove() {
+        guard items.count > 0 else { return }
+
+        var newItems = items
+        guard let index = newItems.index(of: newItems.shuffled()[0]) else { fatalError() }
+        newItems.remove(at: index)
+
+        updateCollectionView(with: newItems)
+    }
+
     func updateCollectionView(with newItems: [UIColor]) {
         let currentItemsContainer: [Container<UIColor>] = items.enumerated().map { Container(indexPath: IndexPath(item: $0, section: 0), item: $1) }
         let newItemsContainer: [Container<UIColor>] = newItems.enumerated().map { Container(indexPath: IndexPath(item: $0, section: 0), item: $1) }
