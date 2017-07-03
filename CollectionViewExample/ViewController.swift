@@ -1,18 +1,32 @@
 import UIKit
 
+struct Container<T> {
+    let indexPath: IndexPath
+    let item: T
+}
+
 class ViewController: UIViewController {
 
     let reuseIdentifier = "c"
 
     @IBOutlet var collectionView: UICollectionView!
 
-    static let initialItems = [
+    static let initialColors = [
         UIColor.red,
         UIColor.green,
         UIColor.blue
     ]
 
-    var items = ViewController.initialItems
+    static let availableColors = [
+        UIColor.red,
+        UIColor.green,
+        UIColor.blue,
+        UIColor.yellow,
+        UIColor.purple,
+        UIColor.brown
+    ]
+
+    var items = ViewController.initialColors
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,26 +37,61 @@ class ViewController: UIViewController {
     }
 
     @IBAction func loadInitialState() {
-        updateCollectionView(with: ViewController.initialItems)
+        updateCollectionView(with: ViewController.initialColors)
     }
 
     @IBAction func shuffle() {
         updateCollectionView(with: items.shuffled())
     }
 
-    @IBAction func addAndRemoveItems() {
-        updateCollectionView(with: [
-            UIColor.orange,
-            UIColor.green,
-            UIColor.red,
-            UIColor.blue,
-            UIColor.yellow
-        ])
+    @IBAction func replaceAndAddItems() {
+        let addableColors = ViewController.availableColors.filter { !items.contains($0) }.shuffled()
+
+        // For the moment always replace the first and add one at the bottom
+        //
+        let newTop = addableColors[0]
+        let newBottom = addableColors[1]
+
+        let itemsToKeep = items[1...ViewController.initialColors.count - 1]
+
+        let newItems = [newTop] + itemsToKeep + [newBottom]
+
+        updateCollectionView(with: newItems.shuffled())
     }
 
     func updateCollectionView(with newItems: [UIColor]) {
+        let currentItemsContainer: [Container<UIColor>] = items.enumerated().map { Container(indexPath: IndexPath(item: $0, section: 0), item: $1) }
+        let newItemsContainer: [Container<UIColor>] = newItems.enumerated().map { Container(indexPath: IndexPath(item: $0, section: 0), item: $1) }
+
         items = newItems
-        collectionView.reloadData()
+
+        collectionView.performBatchUpdates({ [unowned self] _ in
+            let delta = currentItemsContainer.count - newItemsContainer.count
+
+            if delta < 0 {
+                // we have more items now, need to add a few
+                let pathsToInsert = (currentItemsContainer.count..<newItemsContainer.count).map {
+                    IndexPath(item: $0, section: 0)
+                }
+                self.collectionView.insertItems(at: pathsToInsert)
+
+                let pathsToReload = (0..<currentItemsContainer.count).map { IndexPath(item: $0, section: 0) }
+                self.collectionView.reloadItems(at: pathsToReload)
+            } else if delta > 0 {
+                // we have less items now, need to remove a few
+                let pathsToRemove = (newItemsContainer.count..<currentItemsContainer.count).map {
+                    IndexPath(item: $0, section: 0)
+                }
+                self.collectionView.deleteItems(at: pathsToRemove)
+
+                let pathsToReload = (0..<currentItemsContainer.count - delta).map { IndexPath(item: $0, section: 0) }
+                self.collectionView.reloadItems(at: pathsToReload)
+            } else {
+                // count is the same, simply relaod
+                let pathsToReload = (0..<currentItemsContainer.count).map { IndexPath(item: $0, section: 0) }
+                self.collectionView.reloadItems(at: pathsToReload)
+            }
+        })
     }
 }
 
@@ -69,29 +118,5 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: collectionView.frame.width, height: 60.0)
-    }
-}
-
-extension MutableCollection where Indices.Iterator.Element == Index {
-    /// Shuffles the contents of this collection.
-    mutating func shuffle() {
-        let c = count
-        guard c > 1 else { return }
-
-        for (firstUnshuffled , unshuffledCount) in zip(indices, stride(from: c, to: 1, by: -1)) {
-            let d: IndexDistance = numericCast(arc4random_uniform(numericCast(unshuffledCount)))
-            guard d != 0 else { continue }
-            let i = index(firstUnshuffled, offsetBy: d)
-            swap(&self[firstUnshuffled], &self[i])
-        }
-    }
-}
-
-extension Sequence {
-    /// Returns an array with the contents of this sequence, shuffled.
-    func shuffled() -> [Iterator.Element] {
-        var result = Array(self)
-        result.shuffle()
-        return result
     }
 }

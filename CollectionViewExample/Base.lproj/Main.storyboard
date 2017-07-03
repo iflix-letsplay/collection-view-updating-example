@@ -42,28 +42,28 @@
                                     </collectionViewCell>
                                 </cells>
                             </collectionView>
-                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="7nl-3x-2I9">
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" translatesAutoresizingMaskIntoConstraints="NO" id="7nl-3x-2I9">
                                 <rect key="frame" x="16" y="627" width="343" height="40"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oXK-53-Ben">
-                                        <rect key="frame" x="0.0" y="0.0" width="114.5" height="40"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="60" height="40"/>
                                         <state key="normal" title="initial"/>
                                         <connections>
                                             <action selector="loadInitialState" destination="BYZ-38-t0r" eventType="touchUpInside" id="hzY-xB-P3l"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bAu-wk-drd">
-                                        <rect key="frame" x="114.5" y="0.0" width="114" height="40"/>
+                                        <rect key="frame" x="60" y="0.0" width="80.5" height="40"/>
                                         <state key="normal" title="shuffle"/>
                                         <connections>
                                             <action selector="shuffle" destination="BYZ-38-t0r" eventType="touchUpInside" id="xRW-Rp-6bb"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Bbg-fP-XcG">
-                                        <rect key="frame" x="228.5" y="0.0" width="114.5" height="40"/>
-                                        <state key="normal" title="add and remove"/>
+                                        <rect key="frame" x="140.5" y="0.0" width="202.5" height="40"/>
+                                        <state key="normal" title="add and replace 1"/>
                                         <connections>
-                                            <action selector="addAndRemoveItems" destination="BYZ-38-t0r" eventType="touchUpInside" id="ze7-Dv-kP2"/>
+                                            <action selector="replaceAndAddItems" destination="BYZ-38-t0r" eventType="touchUpInside" id="Vzl-xN-zRI"/>
                                         </connections>
                                     </button>
                                 </subviews>
