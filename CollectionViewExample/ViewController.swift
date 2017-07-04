@@ -44,36 +44,51 @@ class ViewController: UIViewController {
     }
 
     func updateCollectionView(with newItems: [UIColor]) {
-        let currentItemsContainer: [Container<UIColor>] = items.enumerated().map { Container(indexPath: IndexPath(item: $0, section: 0), item: $1) }
-        let newItemsContainer: [Container<UIColor>] = newItems.enumerated().map { Container(indexPath: IndexPath(item: $0, section: 0), item: $1) }
+        let previous: [UIColor: IndexPath] = items
+            .enumerated()
+            .reduce([UIColor: IndexPath](), { (dictionary, itemWithIndex) -> [UIColor: IndexPath] in
+                var newDictionary = dictionary
+                newDictionary[itemWithIndex.element] = IndexPath(item: itemWithIndex.offset, section: 0)
+                return newDictionary
+            })
 
-        items = newItems
+        let next: [UIColor: IndexPath] = newItems
+            .enumerated()
+            .reduce([UIColor: IndexPath](), { (dictionary, itemWithIndex) -> [UIColor: IndexPath] in
+                var newDictionary = dictionary
+                newDictionary[itemWithIndex.element] = IndexPath(item: itemWithIndex.offset, section: 0)
+                return newDictionary
+            })
+
+        // removed = all the objects that are in previous but not in next
+        let removed: [IndexPath] = previous
+            .filter { (key, _) -> Bool in
+                return next[key] == nil
+            }
+            .map { (_, indexPath) in return indexPath }
+
+        // inserted = all the objects that are in next but not in previous
+        let inserted: [IndexPath] = next
+            .filter { (key, _) -> Bool in
+                return previous[key] == nil
+            }
+            .map { (_, indexPath) in return indexPath }
+
+        // moved = all the items that are both in next and previous
+        let moved = Array(Set(next.keys).intersection(Set(previous.keys)))
+
+        self.items = newItems
 
         collectionView.performBatchUpdates({ [unowned self] _ in
-            let delta = currentItemsContainer.count - newItemsContainer.count
+            self.collectionView.deleteItems(at: removed)
+            self.collectionView.insertItems(at: inserted)
 
-            if delta < 0 {
-                // we have more items now, need to add a few
-                let pathsToInsert = (currentItemsContainer.count..<newItemsContainer.count).map {
-                    IndexPath(item: $0, section: 0)
-                }
-                self.collectionView.insertItems(at: pathsToInsert)
-
-                let pathsToReload = (0..<currentItemsContainer.count).map { IndexPath(item: $0, section: 0) }
-                self.collectionView.reloadItems(at: pathsToReload)
-            } else if delta > 0 {
-                // we have less items now, need to remove a few
-                let pathsToRemove = (newItemsContainer.count..<currentItemsContainer.count).map {
-                    IndexPath(item: $0, section: 0)
-                }
-                self.collectionView.deleteItems(at: pathsToRemove)
-
-                let pathsToReload = (0..<currentItemsContainer.count - delta).map { IndexPath(item: $0, section: 0) }
-                self.collectionView.reloadItems(at: pathsToReload)
-            } else {
-                // count is the same, simply relaod
-                let pathsToReload = (0..<currentItemsContainer.count).map { IndexPath(item: $0, section: 0) }
-                self.collectionView.reloadItems(at: pathsToReload)
+            moved.forEach { item in
+                guard
+                    let previousIndexPath = previous[item],
+                    let nextIndexPath = next[item]
+                    else { fatalError() }
+                self.collectionView.moveItem(at: previousIndexPath, to: nextIndexPath)
             }
         })
     }
