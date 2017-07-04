@@ -11,25 +11,14 @@ class ViewController: UIViewController {
 
     @IBOutlet var collectionView: UICollectionView!
 
-    static let initialColors = [
-        UIColor.red,
-        UIColor.green,
-        UIColor.blue
-    ]
+    let colorsService = ColorService()
 
-    static let availableColors = [
-        UIColor.red,
-        UIColor.green,
-        UIColor.blue,
-        UIColor.yellow,
-        UIColor.purple,
-        UIColor.brown
-    ]
-
-    var items = ViewController.initialColors
+    var items: [UIColor] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        items = colorsService.initialColors
 
         collectionView.delegate = self
         collectionView.dataSource = self
@@ -37,36 +26,21 @@ class ViewController: UIViewController {
     }
 
     @IBAction func loadInitialState() {
-        updateCollectionView(with: ViewController.initialColors)
+        updateCollectionView(with: colorsService.initialColors)
     }
 
     @IBAction func shuffle() {
-        updateCollectionView(with: items.shuffled())
+        updateCollectionView(with: colorsService.shuffle(items))
     }
 
     @IBAction func replaceAndAddItems() {
-        let addableColors = ViewController.availableColors.filter { !items.contains($0) }.shuffled()
-
-        // For the moment always replace the first and add one at the bottom
-        //
-        let newTop = addableColors[0]
-        let newBottom = addableColors[1]
-
-        let itemsToKeep = items[1...ViewController.initialColors.count - 1]
-
-        let newItems = [newTop] + itemsToKeep + [newBottom]
-
-        updateCollectionView(with: newItems.shuffled())
+        updateCollectionView(with: colorsService.replaceOneAndAddOne(to: items))
     }
 
     @IBAction func remove() {
         guard items.count > 0 else { return }
 
-        var newItems = items
-        guard let index = newItems.index(of: newItems.shuffled()[0]) else { fatalError() }
-        newItems.remove(at: index)
-
-        updateCollectionView(with: newItems)
+        updateCollectionView(with: colorsService.removeOne(from: items))
     }
 
     func updateCollectionView(with newItems: [UIColor]) {
